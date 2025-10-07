@@ -22,7 +22,7 @@ graph TD
     O --> M;
 
     %% cekHujan Function
-    subgraph cekHujan()
+    subgraph cekHujan
         P[START] --> Q(rainValue = BACA_DIGITAL PIN_HUJAN);
         Q --> R{rainValue SAMA DENGAN LOW?};
         

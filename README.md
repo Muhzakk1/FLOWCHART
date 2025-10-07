@@ -3,7 +3,7 @@ graph TD
     A[START] --> B{SETUP};
     
     %% Setup Section
-    B --> C(Inisialisasi Serial (115200));
+    B --> C(Inisialisasi Serial 11520);
     C --> D(Inisialisasi Sensor DHT);
     D --> E(Atur PIN_LED sebagai OUTPUT);
     E --> F(Atur PIN_HUJAN sebagai INPUT);

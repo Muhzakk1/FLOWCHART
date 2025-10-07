@@ -12,7 +12,7 @@ graph TD
     H --> I(Koneksi ke WiFi & Blynk);
     I --> J(Set Timer untuk cekSuhu);
     J --> K(Set Timer untuk cekHujan);
-    K --> L(Tampilkan "Sistem jemuran otomatis siap..." di Serial);
+    K --> L(Tampilkan Sistem jemuran otomatis siap);
 
     %% Loop Section
     L --> M{LOOP};

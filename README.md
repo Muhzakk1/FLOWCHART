@@ -3,57 +3,56 @@ graph TD
     A[START] --> B{SETUP};
     
     %% Setup Section
-    B --> C(Inisialisasi Servo ke Posisi Buka: 100);
-    C --> D(Mulai Sensor DHT);
-    D --> E(Hubungkan Servo ke pin 23);
-    E --> F(Atur pin Rain Sensor 27 sebagai INPUT);
-    F --> G(Atur pin LED 21 sebagai OUTPUT);
-    G --> H(Koneksi ke WiFi & Blynk dengan AUTH_TOKEN);
-    H --> I(Set Timer 2000ms untuk cekSuhu);
-    I --> J(Set Timer 2000ms untuk cekHujan);
-    J --> K(Serial Print: Sistem siap...);
+    B --> C(Inisialisasi Serial (115200));
+    C --> D(Inisialisasi Sensor DHT);
+    D --> E(Atur PIN_LED sebagai OUTPUT);
+    E --> F(Atur PIN_HUJAN sebagai INPUT);
+    F --> G(Lampirkan Servo ke PIN_SERVO);
+    G --> H(Atur posisi awal Servo ke posisiBuka (100));
+    H --> I(Koneksi ke WiFi & Blynk);
+    I --> J(Set Timer untuk cekSuhu() setiap 2000 ms);
+    J --> K(Set Timer untuk cekHujan() setiap 2000 ms);
+    K --> L(Tampilkan "Sistem jemuran otomatis siap..." di Serial);
 
     %% Loop Section
-    K --> L{LOOP};
-    L --> M(Panggil cekHujan());
-    L --> N(Panggil cekSuhu());
-    M --> L;
-    N --> L;
+    L --> M{LOOP};
+    M --> N(Jalankan cekHujan());
+    M --> O(Jalankan cekSuhu());
+    N --> M;
+    O --> M;
 
     %% cekHujan Function
     subgraph cekHujan()
-        O[START] --> P(Baca nilai digital dari Rain Sensor (rainPin 27));
-        P --> Q{Apakah rainValue == LOW?};
+        P[START] --> Q(rainValue = BACA_DIGITAL(PIN_HUJAN));
+        Q --> R{rainValue SAMA DENGAN LOW?};
         
-        Q -- YA (Hujan) --> R(Tulis Servo ke posisi Tutup: 0);
-        R --> S(Serial Print: HUJAN → tutup jemuran);
-        S --> T(Nyala LED Fisik (ledPin 21 HIGH));
-        T --> U(Blynk.virtualWrite V3: Sedang Hujan);
-        U --> V(Blynk.virtualWrite V4: LED ON/Hijau (255));
-        V --> W[END];
+        R -- YA (Hujan) --> S(myServo.write(posisiTutup));
+        S --> T(Tampilkan "HUJAN → tutup jemuran." di Serial);
+        T --> U(ATUR_DIGITAL(PIN_LED, HIGH));
+        U --> V(Kirim ke Blynk (V3): "Sedang Hujan");
+        V --> W(Kirim ke Blynk (V4): 255);
+        W --> X[END];
         
-        Q -- TIDAK (Cerah) --> X(Tulis Servo ke posisi Buka: 100);
-        X --> Y(Serial Print: CERAH = Buka jemuran);
-        Y --> Z(Matikan LED Fisik (ledPin 21 LOW));
-        Z --> AA(Blynk.virtualWrite V3: Tidak Hujan);
-        AA --> BB(Blynk.virtualWrite V4: LED OFF/Hitam (0));
-        BB --> W;
+        R -- TIDAK (Cerah) --> Y(myServo.write(posisiBuka));
+        Y --> Z(Tampilkan "CERAH = Buka jemuran" di Serial);
+        Z --> AA(ATUR_DIGITAL(PIN_LED, LOW));
+        AA --> BB(Kirim ke Blynk (V3): "Tidak Hujan");
+        BB --> CC(Kirim ke Blynk (V4): 0);
+        CC --> X;
     end
     
     %% cekSuhu Function
     subgraph cekSuhu()
-        CC[START] --> DD(Baca Suhu (dht.readTemperature) & Kelembapan (dht.readHumidity));
-        DD --> EE{Apakah Suhu atau Kelembapan NaN?};
+        DD[START] --> EE(suhu = BACA_SUHU_CELSIUS(DHTPIN));
+        EE --> FF(lembab = BACA_KELEMBAPAN(DHTPIN));
+        FF --> GG{suhu ADALAH NaN ATAU lembab ADALAH NaN?};
         
-        EE -- YA --> FF(Serial Print: Gagal membaca sensor!);
-        FF --> GG[Return/END];
+        GG -- YA --> HH(Tampilkan "Gagal membaca sensor!" di Serial);
+        HH --> II[KELUAR DARI FUNGSI/END];
 
-        EE -- TIDAK --> HH(Serial Print Nilai Suhu & Kelembapan);
-        HH --> II(Blynk.virtualWrite V0: Suhu);
-        II --> JJ(Blynk.virtualWrite V1: Kelembapan);
-        JJ --> KK(Delay 1000ms);
-        KK --> GG;
+        GG -- TIDAK --> JJ(Tampilkan "Suhu: [suhu] °C, Kelembapan: [lembab] %" di Serial);
+        JJ --> KK(Kirim ke Blynk (V0): suhu);
+        KK --> LL(Kirim ke Blynk (V1): lembab);
+        LL --> MM(TUNDA (1000 ms));
+        MM --> II;
     end
-    
-    L --> M;
-    L --> N;
